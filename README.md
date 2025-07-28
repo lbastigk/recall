@@ -1,4 +1,4 @@
-# recall - A CLI Tool for Project Knowledge Management
+# recall - A CLI Tool for Knowledge Management
 
 A lightweight command-line tool that helps developers quickly store Project information in a nested data structure. Perfect for remembering function details, configuration snippets, project conventions, and implementation notes.
 
