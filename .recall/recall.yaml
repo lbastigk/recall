@@ -1,108 +1,22 @@
-info:
-  infoShort: "A CLI tool for project knowledge management"
-  infoLong: "Recall is a command-line tool that helps manage project documentation and knowledge by storing information in YAML files with local/global storage priority. It allows you to create, edit, and retrieve project-specific information using a hierarchical key structure."
-  example: |
-    # Initialize local project
-    recall --init
-    
-    # Edit project info
-    recall --edit myProject
-    
-    # View project info
-    recall myProject
-    
-    # Edit specific key
-    recall --edit myProject database connection
-    
-    # View specific key
-    recall myProject database connection
-
-main:
-  infoShort: "Main entry point for the recall CLI application"
-  infoLong: "Handles command-line argument parsing and routes to appropriate functions based on the command pattern. Supports project info viewing, editing, and initialization commands."
-  example: |
-    func main() {
-        settings := loadSettings()
-        args := os.Args[1:]
-        // Route to appropriate function based on args
-    }
-  keys:
-    showUsage:
-      infoShort: "Displays help and usage information for the recall CLI"
-      infoLong: "Shows comprehensive usage instructions, command patterns, examples, and current settings configuration to help users understand how to use the tool."
-      example: |
-        func showUsage(settings *Settings) {
-            fmt.Println("recall - A CLI Tool for Project Knowledge Management")
-            // Display usage patterns and examples
-        }
-    
-    initLocal:
-      infoShort: "Initializes a local .recall directory in the current project"
-      infoLong: "Creates a .recall directory in the current working directory for storing project-specific documentation. This enables local storage that takes priority over global storage."
-      example: |
-        func initLocal(settings *Settings) {
-            os.MkdirAll("./.recall", 0755)
-        }
-    
-    initGlobal:
-      infoShort: "Initializes global recall directory and settings in user's home directory"
-      infoLong: "Creates ~/.recall directory and default settings.yaml file for global project storage. This serves as the fallback when no local .recall directory exists."
-      example: |
-        func initGlobal(settings *Settings) {
-            homeDir, _ := os.UserHomeDir()
-            globalPath := homeDir + "/.recall"
-            os.MkdirAll(globalPath, 0755)
-            // Create default settings.yaml
-        }
-    
-    showKey:
-      infoShort: "Displays information for a specific project key or general project info"
-      infoLong: "Loads project data from YAML files and displays the information associated with a given key path. Shows short description, long description, examples, and available sub-keys."
-      example: |
-        func showKey(settings *Settings, project string, keyPath []string) {
-            projectData := loadProjectData(findProjectFile(project))
-            keyData := getKeyData(projectData, path)
-            // Display formatted information
-        }
-    
-    showSubKeys:
-      infoShort: "Helper function to display available sub-keys for a given key path"
-      infoLong: "Navigates through the project data structure and lists all available sub-keys that can be accessed from the current key location."
-      example: |
-        func showSubKeys(projectData ProjectData, keyPath string) {
-            // Navigate to current key
-            // Show available sub-keys from "keys" section
-        }
-    
-    editKey:
-      infoShort: "Opens an editor to modify information for a specific project key"
-      infoLong: "Creates a temporary file with current key information in user-friendly format, opens the configured editor, then parses the edited content back into YAML structure while preserving existing nested data."
-      example: |
-        func editKey(settings *Settings, project string, keyPath []string) {
-            tempFile, _ := createTempEditFile(currentData)
-            exec.Command(settings.Editor, tempFile).Run()
-            editedData, _ := parseEditedFile(tempFile)
-            setKeyData(projectData, path, editedData)
-        }
-
 dataOperations:
-  infoShort: "Functions for handling YAML data manipulation and key navigation"
-  infoLong: "Contains core functionality for reading, writing, and navigating the hierarchical key structure in project YAML files. Handles type conversions between Go map types and preserves nested data structures."
-  example: "Located in src/data_operations.go"
+  example: Located in src/data_operations.go
+  infoLong: Contains core functionality for reading, writing, and navigating the hierarchical
+    key structure in project YAML files. Handles type conversions between Go map types
+    and preserves nested data structures.
+  infoShort: Functions for handling YAML data manipulation and key navigation
   keys:
     getKeyData:
-      infoShort: "Retrieves KeyData structure for a specific path in project data"
-      infoLong: "Navigates through nested map structure using dot-separated key path, handles both map[string]interface{} and map[interface{}]interface{} types from YAML parsing, and extracts infoShort, infoLong, and example fields."
       example: |
         func getKeyData(projectData ProjectData, keyPath string) KeyData {
             keyParts := strings.Split(keyPath, ".")
             // Navigate through nested structure
             // Return KeyData with info fields
         }
-    
+      infoLong: Navigates through nested map structure using dot-separated key path,
+        handles both map[string]interface{} and map[interface{}]interface{} types
+        from YAML parsing, and extracts infoShort, infoLong, and example fields.
+      infoShort: Retrieves KeyData structure for a specific path in project data
     getStringValue:
-      infoShort: "Helper function to safely extract string values from YAML map data"
-      infoLong: "Provides type-safe extraction of string values from map[interface{}]interface{} structures that result from YAML parsing, handling nil values and type assertions."
       example: |
         func getStringValue(m map[interface{}]interface{}, key string) string {
             if value, exists := m[key]; exists {
@@ -112,20 +26,10 @@ dataOperations:
             }
             return ""
         }
-    
-    setKeyData:
-      infoShort: "Updates KeyData for a specific path while preserving existing nested structure"
-      infoLong: "Navigates to the target key location and updates only the infoShort, infoLong, and example fields while preserving any existing nested keys sections. Handles type conversions and creates intermediate keys as needed."
-      example: |
-        func setKeyData(projectData ProjectData, keyPath string, data KeyData) {
-            keyParts := strings.Split(keyPath, ".")
-            // Navigate/create structure
-            // Update only info fields, preserve "keys" sections
-        }
-    
+      infoLong: Provides type-safe extraction of string values from map[interface{}]interface{}
+        structures that result from YAML parsing, handling nil values and type assertions.
+      infoShort: Helper function to safely extract string values from YAML map data
     parseEditedFile:
-      infoShort: "Parses user-edited temporary file back into KeyData structure"
-      infoLong: "Reads the temporary file created for editing, parses the natural text format with section headers (infoShort:, infoLong:, example:), and converts it back into structured KeyData while handling comments and whitespace."
       example: |
         func parseEditedFile(filename string) (KeyData, error) {
             content := string(data)
@@ -133,10 +37,23 @@ dataOperations:
             // Parse sections and content
             // Return structured KeyData
         }
-    
+      infoLong: Reads the temporary file created for editing, parses the natural text
+        format with section headers (infoShort:, infoLong:, example:), and converts
+        it back into structured KeyData while handling comments and whitespace.
+      infoShort: Parses user-edited temporary file back into KeyData structure
+    setKeyData:
+      example: |
+        func setKeyData(projectData ProjectData, keyPath string, data KeyData) {
+            keyParts := strings.Split(keyPath, ".")
+            // Navigate/create structure
+            // Update only info fields, preserve "keys" sections
+        }
+      infoLong: Navigates to the target key location and updates only the infoShort,
+        infoLong, and example fields while preserving any existing nested keys sections.
+        Handles type conversions and creates intermediate keys as needed.
+      infoShort: Updates KeyData for a specific path while preserving existing nested
+        structure
     setSection:
-      infoShort: "Helper function to set specific fields in KeyData structure during parsing"
-      infoLong: "Used by parseEditedFile to assign parsed content to the appropriate field (infoShort, infoLong, or example) in the KeyData structure."
       example: |
         func setSection(keyData *KeyData, section, content string) {
             switch section {
@@ -145,15 +62,26 @@ dataOperations:
             case "example": keyData.Example = content
             }
         }
-
+      infoLong: Used by parseEditedFile to assign parsed content to the appropriate
+        field (infoShort, infoLong, or example) in the KeyData structure.
+      infoShort: Helper function to set specific fields in KeyData structure during
+        parsing
 fileOperations:
-  infoShort: "Functions for file system operations and YAML file management"
-  infoLong: "Handles all file I/O operations including finding project files with local/global priority, loading/saving YAML data, and creating temporary files for editing."
-  example: "Located in src/file_operations.go"
+  example: Located in src/file_operations.go
+  infoLong: Handles all file I/O operations including finding project files with local/global
+    priority, loading/saving YAML data, and creating temporary files for editing.
+  infoShort: Functions for file system operations and YAML file management
   keys:
+    createTempEditFile:
+      example: "func createTempEditFile(data KeyData) (string, error) {\n    file,
+        _ := ioutil.TempFile(os.TempDir(), \"recall_edit_*.txt\")\n    content :=
+        fmt.Sprintf(\"infoShort:\\n%s\\n\\ninfoLong:\\n%s\\n...\", \n        data.InfoShort,
+        data.InfoLong)\n    file.WriteString(content)\n    return file.Name(), nil\n}\n"
+      infoLong: Generates a temporary file containing the current KeyData in a natural
+        text format with section headers and comments. This format is much more user-friendly
+        than raw YAML for editing.
+      infoShort: Creates temporary file with user-friendly editing format
     findProjectFile:
-      infoShort: "Locates project YAML file with local storage priority over global"
-      infoLong: "Searches for project files with preference for local .recall directory when it exists, falling back to global ~/.recall directory. Ensures consistent storage location based on project setup."
       example: |
         func findProjectFile(project string) string {
             if _, err := os.Stat("./.recall"); err == nil {
@@ -161,10 +89,11 @@ fileOperations:
             }
             // Check local file existence, fallback to global
         }
-    
+      infoLong: Searches for project files with preference for local .recall directory
+        when it exists, falling back to global ~/.recall directory. Ensures consistent
+        storage location based on project setup.
+      infoShort: Locates project YAML file with local storage priority over global
     loadProjectData:
-      infoShort: "Loads and parses YAML project data from file system"
-      infoLong: "Reads project YAML file from disk, handles file existence checks, and unmarshals YAML content into ProjectData map structure. Returns empty map if file doesn't exist."
       example: |
         func loadProjectData(filename string) ProjectData {
             data, err := ioutil.ReadFile(filename)
@@ -172,10 +101,11 @@ fileOperations:
             yaml.Unmarshal(data, &projectData)
             return projectData
         }
-    
+      infoLong: Reads project YAML file from disk, handles file existence checks,
+        and unmarshals YAML content into ProjectData map structure. Returns empty
+        map if file doesn't exist.
+      infoShort: Loads and parses YAML project data from file system
     saveProjectData:
-      infoShort: "Marshals ProjectData to YAML and saves to file system"
-      infoLong: "Converts ProjectData map to YAML format and writes to specified file. Creates necessary directories if they don't exist and handles file permissions appropriately."
       example: |
         func saveProjectData(filename string, projectData ProjectData) error {
             dir := filepath.Dir(filename)
@@ -183,37 +113,121 @@ fileOperations:
             data, _ := yaml.Marshal(projectData)
             return ioutil.WriteFile(filename, data, 0644)
         }
-    
-    createTempEditFile:
-      infoShort: "Creates temporary file with user-friendly editing format"
-      infoLong: "Generates a temporary file containing the current KeyData in a natural text format with section headers and comments. This format is much more user-friendly than raw YAML for editing."
-      example: |
-        func createTempEditFile(data KeyData) (string, error) {
-            file, _ := ioutil.TempFile(os.TempDir(), "recall_edit_*.txt")
-            content := fmt.Sprintf("infoShort:\n%s\n\ninfoLong:\n%s\n...", 
-                data.InfoShort, data.InfoLong)
-            file.WriteString(content)
-            return file.Name(), nil
-        }
+      infoLong: Converts ProjectData map to YAML format and writes to specified file.
+        Creates necessary directories if they don't exist and handles file permissions
+        appropriately.
+      infoShort: Marshals ProjectData to YAML and saves to file system
+info:
+  example: |-
+    recall --init
 
+    recall --edit myProject
+
+    recall myProject
+
+    recall --edit myProject database connection
+
+    recall myProject database connection
+  infoLong: Recall is a command-line tool that helps manage project documentation
+    and knowledge by storing information in YAML files with local/global storage priority.
+    It allows you to create, edit, and retrieve project-specific information using
+    a hierarchical key structure.
+  infoShort: A CLI tool for project knowledge management
+main:
+  example: |
+    func main() {
+        settings := loadSettings()
+        args := os.Args[1:]
+        // Route to appropriate function based on args
+    }
+  infoLong: Handles command-line argument parsing and routes to appropriate functions
+    based on the command pattern. Supports project info viewing, editing, and initialization
+    commands.
+  infoShort: Main entry point for the recall CLI application
+  keys:
+    editKey:
+      example: |
+        func editKey(settings *Settings, project string, keyPath []string) {
+            tempFile, _ := createTempEditFile(currentData)
+            exec.Command(settings.Editor, tempFile).Run()
+            editedData, _ := parseEditedFile(tempFile)
+            setKeyData(projectData, path, editedData)
+        }
+      infoLong: Creates a temporary file with current key information in user-friendly
+        format, opens the configured editor, then parses the edited content back into
+        YAML structure while preserving existing nested data.
+      infoShort: Opens an editor to modify information for a specific project key
+    initGlobal:
+      example: |
+        func initGlobal(settings *Settings) {
+            homeDir, _ := os.UserHomeDir()
+            globalPath := homeDir + "/.recall"
+            os.MkdirAll(globalPath, 0755)
+            // Create default settings.yaml
+        }
+      infoLong: Creates ~/.recall directory and default settings.yaml file for global
+        project storage. This serves as the fallback when no local .recall directory
+        exists.
+      infoShort: Initializes global recall directory and settings in user's home directory
+    initLocal:
+      example: |
+        func initLocal(settings *Settings) {
+            os.MkdirAll("./.recall", 0755)
+        }
+      infoLong: Creates a .recall directory in the current working directory for storing
+        project-specific documentation. This enables local storage that takes priority
+        over global storage.
+      infoShort: Initializes a local .recall directory in the current project
+    showKey:
+      example: |
+        func showKey(settings *Settings, project string, keyPath []string) {
+            projectData := loadProjectData(findProjectFile(project))
+            keyData := getKeyData(projectData, path)
+            // Display formatted information
+        }
+      infoLong: Loads project data from YAML files and displays the information associated
+        with a given key path. Shows short description, long description, examples,
+        and available sub-keys.
+      infoShort: Displays information for a specific project key or general project
+        info
+    showSubKeys:
+      example: |
+        func showSubKeys(projectData ProjectData, keyPath string) {
+            // Navigate to current key
+            // Show available sub-keys from "keys" section
+        }
+      infoLong: Navigates through the project data structure and lists all available
+        sub-keys that can be accessed from the current key location.
+      infoShort: Helper function to display available sub-keys for a given key path
+    showUsage:
+      example: |
+        func showUsage(settings *Settings) {
+            fmt.Println("recall - A CLI Tool for Project Knowledge Management")
+            // Display usage patterns and examples
+        }
+      infoLong: Shows comprehensive usage instructions, command patterns, examples,
+        and current settings configuration to help users understand how to use the
+        tool.
+      infoShort: Displays help and usage information for the recall CLI
 settings:
-  infoShort: "Functions for managing user settings and configuration"
-  infoLong: "Handles loading and creating user settings from ~/.recall/settings.yaml, providing default configuration values and YAML marshaling/unmarshaling for settings persistence."
-  example: "Located in src/settings.go"
+  example: Located in src/settings.go
+  infoLong: Handles loading and creating user settings from ~/.recall/settings.yaml,
+    providing default configuration values and YAML marshaling/unmarshaling for settings
+    persistence.
+  infoShort: Functions for managing user settings and configuration
   keys:
     defaultSettings:
-      infoShort: "Returns default Settings structure with nano as default editor"
-      infoLong: "Creates and returns a Settings struct with sensible default values. Currently defaults to nano editor but could be extended for other configuration options."
       example: |
         func defaultSettings() *Settings {
             return &Settings{
                 Editor: "nano",
             }
         }
-    
+      infoLong: Creates and returns a Settings struct with sensible default values.
+        Currently defaults to nano editor but could be extended for other configuration
+        options.
+      infoShort: Returns default Settings structure with nano as default editor
     loadSettings:
-      infoShort: "Loads user settings from ~/.recall/settings.yaml or returns defaults"
-      infoLong: "Attempts to load settings from the global settings file, falling back to defaults if file doesn't exist. Provides helpful messages about running --init-global to create settings."
       example: |
         func loadSettings() *Settings {
             homeDir, _ := os.UserHomeDir()
@@ -221,3 +235,7 @@ settings:
             // Try to load, fallback to defaults
             // Return loaded or default settings
         }
+      infoLong: Attempts to load settings from the global settings file, falling back
+        to defaults if file doesn't exist. Provides helpful messages about running
+        --init-global to create settings.
+      infoShort: Loads user settings from ~/.recall/settings.yaml or returns defaults

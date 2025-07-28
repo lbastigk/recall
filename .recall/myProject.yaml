@@ -1,6 +1,0 @@
-foo:
-  keys:
-    bar:
-      example: ""
-      infoLong: ""
-      infoShort: bar is not foo!

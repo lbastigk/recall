@@ -15,25 +15,56 @@ func main() {
 
 	args := os.Args[1:] // Skip the program name
 
+	// Check if --edit flag is at the end
+	editMode := false
+	if len(args) > 1 && args[len(args)-1] == "--edit" {
+		editMode = true
+		args = args[:len(args)-1] // Remove --edit from the end
+	}
+
 	// Handle different argument patterns
 	switch len(args) {
 	case 0:
+		if editMode {
+			fmt.Println("[ERROR] --edit requires at least the project name")
+			showUsage(settings)
+			os.Exit(1)
+		}
 		showUsage(settings)
 	case 1:
 		if args[0] == "--init" {
+			if editMode {
+				fmt.Println("[ERROR] Cannot use --edit with --init")
+				showUsage(settings)
+				os.Exit(1)
+			}
 			initLocal(settings)
 		} else if args[0] == "--init-global" {
+			if editMode {
+				fmt.Println("[ERROR] Cannot use --edit with --init-global")
+				showUsage(settings)
+				os.Exit(1)
+			}
 			initGlobal(settings)
 		} else {
 			project := args[0]
 			keyPath := []string{}
-			showKey(settings, project, keyPath)	// Empty keyPath means general project info
+			if editMode {
+				editKey(settings, project, keyPath)
+			} else {
+				showKey(settings, project, keyPath)	// Empty keyPath means general project info
+			}
 		}
 	default:
-		// Handle --edit command
+		// Handle --edit command at beginning (legacy support)
 		if args[0] == "--edit" {
+			if editMode {
+				fmt.Println("[ERROR] Cannot use --edit both at beginning and end")
+				showUsage(settings)
+				os.Exit(1)
+			}
 			if len(args) < 2 {
-				fmt.Println("[ERROR] --edit requires at least project the project name")
+				fmt.Println("[ERROR] --edit requires at least the project name")
 				showUsage(settings)
 				os.Exit(1)
 			}
@@ -45,7 +76,11 @@ func main() {
 			// recall <project> <key> [nested keys...]
 			project := args[0]
 			keyPath := args[1:]
-			showKey(settings, project, keyPath)
+			if editMode {
+				editKey(settings, project, keyPath)
+			} else {
+				showKey(settings, project, keyPath)
+			}
 		}
 	}
 }
@@ -59,6 +94,7 @@ func showUsage(settings *Settings) {
 	fmt.Println("  recall <project> <key>                Show specific key info")
 	fmt.Println("  recall <project> <key> <subkey>...    Show nested key info")
 	fmt.Println("  recall --edit <project> <key>...      Edit specific key")
+	fmt.Println("  recall <project> <key>... --edit      Edit specific key (alternative)")
 	fmt.Println("  recall --init                         Initialize local recall")
 	fmt.Println("  recall --init-global                  Initialize global recall")
 	fmt.Println()
@@ -68,6 +104,7 @@ func showUsage(settings *Settings) {
 	fmt.Println("  recall myApp myClass myFunction")
 	fmt.Println("  recall myApp myClass myFunction myVariable")
 	fmt.Println("  recall --edit myApp deployment")
+	fmt.Println("  recall myApp deployment --edit")
 	fmt.Println()
 	fmt.Printf("Settings: Editor=%s\n", settings.Editor)
 }
@@ -334,34 +371,3 @@ func editKey(settings *Settings, project string, keyPath []string) {
 	fmt.Printf("[INFO] Saved changes to %s\n", projectFile)
 }
 
-// Example structure of myProject.yaml:
-// recall.yaml
-// info:
-//   name: recall
-//   description: CLI tool for managing project knowledge
-//   type: project
-//   usage: ./recall <project> [key] [subkey...]
-// keys:
-//   main:
-//     description: Main entry point for the project
-//     type: function
-//     keys:
-//       args:
-//         description: Command line arguments
-//         type: list
-//       exampleVariable:
-//         description: Example variable for demonstration
-//         type: string
-//         value: "default value"
-//   initLocal:
-//     description: Initializes local recall directory
-//     type: function
-//   initGlobal:
-//     description: Initializes global recall directory
-//     type: function
-//   showKey:
-//     description: Displays specific key info
-//     type: function
-//   editKey:
-//     description: Opens editor for specific key
-//     type: function
