@@ -140,22 +140,6 @@ recall myApp deployment
 recall --edit myApp database
 ```
 
-### Common Use Cases
-```bash
-# Document database functions
-recall --edit myApp database
-
-# Remember deployment steps  
-recall --edit myApp deployment
-
-# Store API information
-recall --edit myApp api
-
-# Quick lookup
-recall myApp database
-# Shows: database connection info and examples
-```
-
 ## File Locations
 
 - **Local**: `./.recall/<project>.yaml` (project-specific)
