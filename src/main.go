@@ -4,20 +4,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"os/exec"
+	"io/ioutil"
 	"gopkg.in/yaml.v2"
 )
-
-// Settings holds configuration for the recall application
-type Settings struct {
-	Editor       string 	// Preferred editor (nano, vim, etc.)
-}
-
-// Default settings
-func defaultSettings() *Settings {
-	return &Settings{
-		Editor:     "nano",
-	}
-}
 
 func main() {
 	// Load settings from ~/.recall/settings.yaml if it exists
@@ -84,71 +74,126 @@ func showUsage(settings *Settings) {
 
 func initLocal(settings *Settings) {
 	fmt.Println("Initializing local recall directory at ./.recall/...")
-	// TODO: Create .recall/ directory
+	if err := os.MkdirAll("./.recall", 0755); err != nil {
+		fmt.Printf("Error creating ./.recall/ directory: %v\n", err)
+		return
+	}
 	fmt.Println("Created ./.recall/ directory")
 }
 
 func initGlobal(settings *Settings) {
+	// 1.) Check if ~/.recall/ directory exists
 	homeDir, _ := os.UserHomeDir()
 	globalPath := homeDir + "/.recall"
-	fmt.Printf("Initializing global recall directory at %s...\n", globalPath)
-	// TODO: Create ~/.recall/ directory and settings.yaml
-	fmt.Printf("Created %s directory\n", globalPath)
+	if _, err := os.Stat(globalPath); err == nil {
+		// Directory exists, no need to create it
+		fmt.Println("Global recall directory already exists at " + globalPath)
+	} else {
+		// 2.) If not, create it
+		if err := os.MkdirAll(globalPath, 0755); err != nil {
+			fmt.Printf("Error creating "+globalPath+" directory: %v\n", err)
+			return
+		}
+		fmt.Printf("Created %s directory\n", globalPath)
+	}
+
+	// 3.) Check if settings.yaml exists in ~/.recall/
+	settingsFile := globalPath + "/settings.yaml"
+	if _, err := os.Stat(settingsFile); err == nil {
+		// File exists, no need to create it
+		fmt.Println("Global settings file already exists at " + settingsFile)
+	} else {
+		// 4.) If not, create default settings.yaml
+		defaultSettings := defaultSettings()
+		data, err := yaml.Marshal(defaultSettings)
+		if err != nil {
+			fmt.Printf("Error marshaling settings: %v\n", err)
+			return
+		}
+		
+		if err := ioutil.WriteFile(settingsFile, data, 0644); err != nil {
+			fmt.Printf("Error creating settings file: %v\n", err)
+			return
+		}
+		fmt.Printf("Created default settings file at %s\n", settingsFile)
+	}
 }
 
 func showKey(settings *Settings, project string, keyPath []string) {
-	if len(keyPath) == 0 {
-		fmt.Printf("Project: %s (showing general info)\n", project)
-	} else {
-		path := strings.Join(keyPath, ".")
-		fmt.Printf("Project: %s, Key: %s\n", project, path)
-	}
+	path := strings.Join(keyPath, ".keys.")
+	fmt.Printf("Project: %s, Key: %s\n", project, path)
+
 	// TODO: Load and display specific nested key from project.yaml
 	// Look in ./.recall/ first, then ~/.recall/
+
+	// 1.) Check if ./.recall/<project>.yaml exists
+
+	// 2.) If not, check ~/.recall/<project>.yaml
+
+	// 3.) If found, read the file and parse the YAML
+
+	// 4.) Display the key info, or an error if not found
+
 }
 
 func editKey(settings *Settings, project string, keyPath []string) {
+	var path string
 	if len(keyPath) == 0 {
 		fmt.Printf("Editing general info for project: %s\n", project)
+		path = "info"
 	} else {
-		path := strings.Join(keyPath, ".")
+		// For nested keys, we need to construct the path properly
+		// e.g., keyPath ["foo", "bar"] becomes "foo.keys.bar"
+		if len(keyPath) == 1 {
+			path = keyPath[0]
+		} else {
+			// For multiple levels, insert ".keys." between them
+			path = keyPath[0]
+			for i := 1; i < len(keyPath); i++ {
+				path += ".keys." + keyPath[i]
+			}
+		}
 		fmt.Printf("Editing project: %s, key: %s (using %s)\n", project, path, settings.Editor)
 	}
-	// TODO: Open editor for specific nested key
-	// Use settings.Editor to open the editor
-}
 
-func loadSettings() *Settings {
-	// Load settings from ~/.recall/settings.yaml
-	homeDir, _ := os.UserHomeDir()
-	settingsFile := homeDir + "/.recall/settings.yaml"
-	// Try loading settings from the file
-	// If file doesn't exist, return default settings
-	if _, err := os.Stat(settingsFile); os.IsNotExist(err) {
-		// Warn user to run `recall --init-global` to create settings
-		fmt.Println("Settings file not found. Please run `recall --init-global` to create default settings.")
-		fmt.Println("Using default settings.")
-		fmt.Println("")
-
-		// Return default settings
-		return defaultSettings()
-	}
-	// Load settings from the file
-	file, err := os.Open(settingsFile)
+	// 1.) Find project file and load existing data
+	projectFile := findProjectFile(project)
+	projectData := loadProjectData(projectFile)
+	
+	// 2.) Get current key data or create new entry
+	currentData := getKeyData(projectData, path)
+	
+	// 3.) Create temporary YAML file with current key info
+	tempFile, err := createTempEditFile(currentData)
 	if err != nil {
-		fmt.Println("Error loading settings:", err)
-		return defaultSettings()
+		fmt.Printf("Error creating temp file: %v\n", err)
+		return
 	}
-	defer file.Close()
-
-	var settings Settings
-	if err := yaml.NewDecoder(file).Decode(&settings); err != nil {
-		fmt.Println("Error decoding settings:", err)
-		return defaultSettings()
+	defer os.Remove(tempFile) // Clean up temp file when done
+	
+	// 4.) Use settings.Editor to open the file
+	cmd := exec.Command(settings.Editor, tempFile)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("Error running editor: %v\n", err)
+		return
 	}
-
-	// Return loaded settings
-	return &settings
+	
+	// 5.) Read the edited file back
+	editedData, err := parseEditedFile(tempFile)
+	if err != nil {
+		fmt.Printf("Error parsing edited file: %v\n", err)
+		return
+	}
+	
+	// 6.) Update the project data and save
+	setKeyData(projectData, path, editedData)
+	saveProjectData(projectFile, projectData)
+	
+	fmt.Printf("✓ Saved changes to %s\n", projectFile)
 }
 
 // Example structure of myProject.yaml:

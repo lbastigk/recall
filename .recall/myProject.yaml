@@ -1,0 +1,9 @@
+foo:
+  example: ""
+  infoLong: ""
+  infoShort: foo is the parent of little bartholomew, we call him bar
+  keys:
+    bar:
+      example: ""
+      infoLong: ""
+      infoShort: bar is not foo!
