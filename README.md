@@ -66,44 +66,36 @@ recall --init-global                        # Initialize global recall
 Information is stored in YAML files with the following structure:
 
 ```yaml
-# .recall/myProject.yaml
+# excerpt from .recall/recall.yaml:
 info:
-  infoShort: "Web application for task management"
-  infoLong: |
-    MyProject is a Ruby on Rails web application for managing tasks
-    and projects. Uses PostgreSQL database, Redis for caching,
-    and deploys to Heroku.
-  example: |
-    # Start development server
-    bundle exec rails server
-    
-    # Run tests
-    bundle exec rspec
+  example: |-
+    recall --init
 
-database:
-  infoShort: "Database connection utilities"
-  infoLong: |
-    Functions for connecting to the database, handling queries,
-    and managing connection pools.
-  example: |
-    conn = Database.connect()
-    result = conn.query("SELECT * FROM users")
-    conn.close()
+    recall --edit myProject
 
-authentication:
-  infoShort: "User authentication functions" 
-  infoLong: "Login, logout, and session management"
-  example: |
-    user = Auth.login(username, password)
-    Auth.logout(user)
+    recall myProject
 
-deployment:
-  infoShort: "Production deployment steps"
+    recall --edit myProject database connection
+
+    recall myProject database connection
+  infoLong: Recall is a command-line tool that helps manage project documentation
+    and knowledge by storing information in YAML files with local/global storage priority.
+    It allows you to create, edit, and retrieve project-specific information using
+    a hierarchical key structure.
+  infoShort: A CLI tool for project knowledge management
+main:
   example: |
-    git pull origin main
-    bundle install
-    rake db:migrate
-    sudo systemctl restart myapp
+    func main() {
+        settings := loadSettings()
+        args := os.Args[1:]
+        // Route to appropriate function based on args
+    }
+  infoLong: Handles command-line argument parsing and routes to appropriate functions
+    based on the command pattern. Supports project info viewing, editing, and initialization
+    commands.
+  infoShort: Main entry point for the recall CLI application
+  keys:
+  ...
 ```
 
 ### Interactive Editing
