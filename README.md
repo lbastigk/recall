@@ -1,6 +1,8 @@
 # recall - A CLI Tool for Project Knowledge Management
 
-A lightweight command-line tool that helps developers quickly sto### Basic Usage
+A lightweight command-line tool that helps developers quickly store Project information in a nested data structure. Perfect for remembering function details, configuration snippets, project conventions, and implementation notes.
+
+### Basic Usage
 ```bash
 # Show help
 recall
@@ -17,7 +19,7 @@ recall myApp deployment
 # Edit information
 recall --edit myApp database
 recall --edit myApp info  # Edit general project info
-```d manage project-specific information. Perfect for remembering function details, configuration snippets, project conventions, and implementation notes.
+```
 
 ## Features
 
@@ -42,17 +44,8 @@ make install
 # Initialize recall in current project
 recall --init
 
-# Initialize global recall directory
+# Initialize global recall directory (optional)
 recall --init-global
-
-# Show usage
-recall
-
-# Show all info from myProject
-recall myProject
-
-# Show specific function info
-recall myProject somefunction
 ```
 
 ## Usage
