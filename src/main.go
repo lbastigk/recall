@@ -120,27 +120,156 @@ func initGlobal(settings *Settings) {
 }
 
 func showKey(settings *Settings, project string, keyPath []string) {
-	path := strings.Join(keyPath, ".keys.")
-	fmt.Printf("Project: %s, Key: %s\n", project, path)
+	var path string
+	if len(keyPath) == 0 {
+		path = "" // Empty path means search the root of the document
+	} else {
+		// For nested keys, we need to construct the path properly
+		// e.g., keyPath ["foo", "bar"] becomes "foo.keys.bar"
+		if len(keyPath) == 1 {
+			path = keyPath[0]
+		} else {
+			// For multiple levels, insert ".keys." between them
+			path = keyPath[0]
+			for i := 1; i < len(keyPath); i++ {
+				path += ".keys." + keyPath[i]
+			}
+		}
+	}
 
-	// TODO: Load and display specific nested key from project.yaml
-	// Look in ./.recall/ first, then ~/.recall/
+	// 1.) Find project file and load existing data
+	projectFile := findProjectFile(project)
+	projectData := loadProjectData(projectFile)
+	
+	// 2.) Check if project file exists
+	if len(projectData) == 0 {
+		fmt.Printf("❌ Project '%s' not found. Use --edit to create it.\n", project)
+		return
+	}
+	
+	// 3.) Get key data
+	keyData := getKeyData(projectData, path)
+	
+	// 4.) Display the information
+	if keyData.InfoShort == "" && keyData.InfoLong == "" && keyData.Example == "" {
+		if len(keyPath) == 0 {
+			fmt.Printf("No general info found for project '%s'. Use --edit to add it.\n", project)
+		} else {
+			fmt.Printf("Key '%s' not found. Use --edit to create it.\n", strings.Join(keyPath, " → "))
+		}
+		return
+	}
+	
+	fmt.Println()
+	if keyData.InfoShort != "" {
+		fmt.Println()
+		fmt.Println()
+		fmt.Println("//----------------------------------------------")
+		fmt.Printf("// Short: \n%s\n", keyData.InfoShort)
+	}
+	if keyData.InfoLong != "" {
+		fmt.Println()
+		fmt.Println()
+		fmt.Println("//----------------------------------------------")
+		fmt.Printf("// Long: \n%s\n", keyData.InfoLong)
+	}
+	if keyData.Example != "" {
+		fmt.Println()
+		fmt.Println()
+		fmt.Println("//----------------------------------------------")
+		fmt.Printf("// Example:\n%s\n", keyData.Example)
+	}
+	
+	// 5.) Show available sub-keys if they exist
+	showSubKeys(projectData, path)
+}
 
-	// 1.) Check if ./.recall/<project>.yaml exists
-
-	// 2.) If not, check ~/.recall/<project>.yaml
-
-	// 3.) If found, read the file and parse the YAML
-
-	// 4.) Display the key info, or an error if not found
-
+func showSubKeys(projectData ProjectData, keyPath string) {
+	var current map[string]interface{}
+	
+	if keyPath == "" {
+		// Empty path means we're at the root, convert projectData to the right type
+		current = make(map[string]interface{})
+		for k, v := range projectData {
+			current[k] = v
+		}
+	} else {
+		// Navigate to the current key to check for sub-keys
+		keyParts := strings.Split(keyPath, ".")
+		currentData := projectData
+		
+		// Navigate to the target key
+		for _, key := range keyParts {
+			if key == "" {
+				continue
+			}
+			if value, exists := currentData[key]; exists {
+				switch v := value.(type) {
+				case map[string]interface{}:
+					currentData = v
+				case map[interface{}]interface{}:
+					// Convert to map[string]interface{}
+					converted := make(map[string]interface{})
+					for k, val := range v {
+						if strKey, ok := k.(string); ok {
+							converted[strKey] = val
+						}
+					}
+					currentData = converted
+				default:
+					return // Not a map, no sub-keys
+				}
+			} else {
+				return // Key doesn't exist
+			}
+		}
+		current = currentData
+	}
+	
+	// Look for "keys" sub-section or direct keys at root level
+	var keysToShow map[string]interface{}
+	
+	if keysSection, exists := current["keys"]; exists {
+		// There's a "keys" section, use that
+		switch keys := keysSection.(type) {
+		case map[string]interface{}:
+			keysToShow = keys
+		case map[interface{}]interface{}:
+			keysToShow = make(map[string]interface{})
+			for k, v := range keys {
+				if strKey, ok := k.(string); ok {
+					keysToShow[strKey] = v
+				}
+			}
+		}
+	} else if keyPath == "" {
+		// At root level and no "keys" section, show all top-level keys
+		keysToShow = make(map[string]interface{})
+		for k, v := range current {
+			// Skip info fields at root level
+			if k != "infoShort" && k != "infoLong" && k != "example" {
+				keysToShow[k] = v
+			}
+		}
+	}
+	//*
+	if len(keysToShow) > 0 {
+		fmt.Println()
+		fmt.Println()
+		fmt.Println("//----------------------------------------------")
+		fmt.Println("// Available sub-keys:")
+		for subKey := range keysToShow {
+			fmt.Printf("  • %s\n", subKey)
+		}
+	}
+	//*/
 }
 
 func editKey(settings *Settings, project string, keyPath []string) {
 	var path string
 	if len(keyPath) == 0 {
 		fmt.Printf("Editing general info for project: %s\n", project)
-		path = "info"
+		path = "" // Empty path means edit the root of the document
 	} else {
 		// For nested keys, we need to construct the path properly
 		// e.g., keyPath ["foo", "bar"] becomes "foo.keys.bar"
