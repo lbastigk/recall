@@ -1,3 +1,19 @@
+build:
+  example: |-
+    sudo apt update
+    sudo apt install golang-go
+    git clone https://github.com/lbastigk/recall
+    cd recall
+    go mod tidy
+    make build
+    ./recall
+  infoLong: |-
+    - Install Go 1.21 or later
+    - Clone the repository: git clone https://github.com/lbastigk/recall
+    - Navigate to project directory
+    - Install dependencies
+    - Build the binary
+  infoShort: How to build the recall binary
 dataOperations:
   example: Located in src/data_operations.go
   infoLong: Contains core functionality for reading, writing, and navigating the hierarchical
@@ -128,10 +144,10 @@ info:
     recall --edit myProject database connection
 
     recall myProject database connection
-  infoLong: Recall is a command-line tool that helps manage project documentation
+  infoLong: "Recall is a command-line tool that helps manage project documentation
     and knowledge by storing information in YAML files with local/global storage priority.
-    It allows you to create, edit, and retrieve project-specific information using
-    a hierarchical key structure.
+    \nIt allows you to create, edit, and retrieve project-specific information using
+    a hierarchical key structure."
   infoShort: A CLI tool for project knowledge management
 main:
   example: |
