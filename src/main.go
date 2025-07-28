@@ -33,7 +33,7 @@ func main() {
 		// Handle --edit command
 		if args[0] == "--edit" {
 			if len(args) < 2 {
-				fmt.Println("Error: --edit requires at least project the project name")
+				fmt.Println("[ERROR] --edit requires at least project the project name")
 				showUsage(settings)
 				os.Exit(1)
 			}
@@ -73,12 +73,12 @@ func showUsage(settings *Settings) {
 }
 
 func initLocal(settings *Settings) {
-	fmt.Println("Initializing local recall directory at ./.recall/...")
+	fmt.Println("[INFO] Initializing local recall directory at ./.recall/...")
 	if err := os.MkdirAll("./.recall", 0755); err != nil {
-		fmt.Printf("Error creating ./.recall/ directory: %v\n", err)
+		fmt.Printf("[ERROR] Error creating ./.recall/ directory: %v\n", err)
 		return
 	}
-	fmt.Println("Created ./.recall/ directory")
+	fmt.Println("[INFO] Created ./.recall/ directory")
 }
 
 func initGlobal(settings *Settings) {
@@ -87,42 +87,43 @@ func initGlobal(settings *Settings) {
 	globalPath := homeDir + "/.recall"
 	if _, err := os.Stat(globalPath); err == nil {
 		// Directory exists, no need to create it
-		fmt.Println("Global recall directory already exists at " + globalPath)
+		fmt.Println("[INFO] Global recall directory already exists at " + globalPath)
 	} else {
 		// 2.) If not, create it
 		if err := os.MkdirAll(globalPath, 0755); err != nil {
-			fmt.Printf("Error creating "+globalPath+" directory: %v\n", err)
+			fmt.Printf("[ERROR] Error creating "+globalPath+" directory: %v\n", err)
 			return
 		}
-		fmt.Printf("Created %s directory\n", globalPath)
+		fmt.Printf("[INFO] Created %s directory\n", globalPath)
 	}
 
 	// 3.) Check if settings.yaml exists in ~/.recall/
 	settingsFile := globalPath + "/settings.yaml"
 	if _, err := os.Stat(settingsFile); err == nil {
 		// File exists, no need to create it
-		fmt.Println("Global settings file already exists at " + settingsFile)
+		fmt.Println("[INFO] Global settings file already exists at " + settingsFile)
 	} else {
 		// 4.) If not, create default settings.yaml
 		defaultSettings := defaultSettings()
 		data, err := yaml.Marshal(defaultSettings)
 		if err != nil {
-			fmt.Printf("Error marshaling settings: %v\n", err)
+			fmt.Printf("[ERROR] Error marshaling settings: %v\n", err)
 			return
 		}
 		
 		if err := ioutil.WriteFile(settingsFile, data, 0644); err != nil {
-			fmt.Printf("Error creating settings file: %v\n", err)
+			fmt.Printf("[ERROR] Error creating settings file: %v\n", err)
 			return
 		}
-		fmt.Printf("Created default settings file at %s\n", settingsFile)
+		fmt.Printf("[INFO] Created default settings file at %s\n", settingsFile)
 	}
 }
 
 func showKey(settings *Settings, project string, keyPath []string) {
 	var path string
 	if len(keyPath) == 0 {
-		path = "" // Empty path means search the root of the document
+		fmt.Printf("Project: %s (general info)\n", project)
+		path = "info" // Use "info" key for root-level project information
 	} else {
 		// For nested keys, we need to construct the path properly
 		// e.g., keyPath ["foo", "bar"] becomes "foo.keys.bar"
@@ -135,6 +136,7 @@ func showKey(settings *Settings, project string, keyPath []string) {
 				path += ".keys." + keyPath[i]
 			}
 		}
+		fmt.Printf("Project: %s, Key: %s\n", project, strings.Join(keyPath, " → "))
 	}
 
 	// 1.) Find project file and load existing data
@@ -143,7 +145,7 @@ func showKey(settings *Settings, project string, keyPath []string) {
 	
 	// 2.) Check if project file exists
 	if len(projectData) == 0 {
-		fmt.Printf("❌ Project '%s' not found. Use --edit to create it.\n", project)
+		fmt.Printf("[ERROR] Project '%s' not found. Use --edit to create it.\n", project)
 		return
 	}
 	
@@ -153,31 +155,30 @@ func showKey(settings *Settings, project string, keyPath []string) {
 	// 4.) Display the information
 	if keyData.InfoShort == "" && keyData.InfoLong == "" && keyData.Example == "" {
 		if len(keyPath) == 0 {
-			fmt.Printf("No general info found for project '%s'. Use --edit to add it.\n", project)
+			fmt.Printf("[INFO] No general info found for project '%s'. Use --edit to add it.\n", project)
 		} else {
-			fmt.Printf("Key '%s' not found. Use --edit to create it.\n", strings.Join(keyPath, " → "))
+			fmt.Printf("[INFO] Key '%s' not found or is empty. Use --edit to create it.\n", strings.Join(keyPath, " → "))
 		}
 		return
 	}
-	
-	fmt.Println()
+
 	if keyData.InfoShort != "" {
 		fmt.Println()
 		fmt.Println()
 		fmt.Println("//----------------------------------------------")
-		fmt.Printf("// Short: \n%s\n", keyData.InfoShort)
+		fmt.Printf ("// Short: \n%s\n", keyData.InfoShort)
 	}
 	if keyData.InfoLong != "" {
 		fmt.Println()
 		fmt.Println()
 		fmt.Println("//----------------------------------------------")
-		fmt.Printf("// Long: \n%s\n", keyData.InfoLong)
+		fmt.Printf ("// Long: \n%s\n", keyData.InfoLong)
 	}
 	if keyData.Example != "" {
 		fmt.Println()
 		fmt.Println()
 		fmt.Println("//----------------------------------------------")
-		fmt.Printf("// Example:\n%s\n", keyData.Example)
+		fmt.Printf ("// Example:\n%s\n", keyData.Example)
 	}
 	
 	// 5.) Show available sub-keys if they exist
@@ -187,7 +188,15 @@ func showKey(settings *Settings, project string, keyPath []string) {
 func showSubKeys(projectData ProjectData, keyPath string) {
 	var current map[string]interface{}
 	
-	if keyPath == "" {
+	if keyPath == "info" {
+		// For "info" path, we want to show the root-level keys (excluding "info" itself)
+		current = make(map[string]interface{})
+		for k, v := range projectData {
+			if k != "info" { // Exclude the info section itself
+				current[k] = v
+			}
+		}
+	} else if keyPath == "" {
 		// Empty path means we're at the root, convert projectData to the right type
 		current = make(map[string]interface{})
 		for k, v := range projectData {
@@ -195,7 +204,7 @@ func showSubKeys(projectData ProjectData, keyPath string) {
 		}
 	} else {
 		// Navigate to the current key to check for sub-keys
-		keyParts := strings.Split(keyPath, ".")
+		keyParts := strings.Split(keyPath, ".keys.")
 		currentData := projectData
 		
 		// Navigate to the target key
@@ -242,7 +251,7 @@ func showSubKeys(projectData ProjectData, keyPath string) {
 				}
 			}
 		}
-	} else if keyPath == "" {
+	} else if keyPath == "" || keyPath == "info" {
 		// At root level and no "keys" section, show all top-level keys
 		keysToShow = make(map[string]interface{})
 		for k, v := range current {
@@ -268,7 +277,7 @@ func showSubKeys(projectData ProjectData, keyPath string) {
 func editKey(settings *Settings, project string, keyPath []string) {
 	var path string
 	if len(keyPath) == 0 {
-		fmt.Printf("Editing general info for project: %s\n", project)
+		fmt.Printf("[INFO] Editing general info for project: %s\n", project)
 		path = "" // Empty path means edit the root of the document
 	} else {
 		// For nested keys, we need to construct the path properly
@@ -282,7 +291,7 @@ func editKey(settings *Settings, project string, keyPath []string) {
 				path += ".keys." + keyPath[i]
 			}
 		}
-		fmt.Printf("Editing project: %s, key: %s (using %s)\n", project, path, settings.Editor)
+		fmt.Printf("[INFO] Editing project: %s, key: %s (using %s)\n", project, path, settings.Editor)
 	}
 
 	// 1.) Find project file and load existing data
@@ -295,7 +304,7 @@ func editKey(settings *Settings, project string, keyPath []string) {
 	// 3.) Create temporary YAML file with current key info
 	tempFile, err := createTempEditFile(currentData)
 	if err != nil {
-		fmt.Printf("Error creating temp file: %v\n", err)
+		fmt.Printf("[ERROR] Error creating temp file: %v\n", err)
 		return
 	}
 	defer os.Remove(tempFile) // Clean up temp file when done
@@ -307,14 +316,14 @@ func editKey(settings *Settings, project string, keyPath []string) {
 	cmd.Stderr = os.Stderr
 	
 	if err := cmd.Run(); err != nil {
-		fmt.Printf("Error running editor: %v\n", err)
+		fmt.Printf("[ERROR] Error running editor: %v\n", err)
 		return
 	}
 	
 	// 5.) Read the edited file back
 	editedData, err := parseEditedFile(tempFile)
 	if err != nil {
-		fmt.Printf("Error parsing edited file: %v\n", err)
+		fmt.Printf("[ERROR] Error parsing edited file: %v\n", err)
 		return
 	}
 	
@@ -322,7 +331,7 @@ func editKey(settings *Settings, project string, keyPath []string) {
 	setKeyData(projectData, path, editedData)
 	saveProjectData(projectFile, projectData)
 	
-	fmt.Printf("✓ Saved changes to %s\n", projectFile)
+	fmt.Printf("[INFO] Saved changes to %s\n", projectFile)
 }
 
 // Example structure of myProject.yaml:

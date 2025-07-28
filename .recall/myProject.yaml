@@ -1,4 +1,6 @@
-"":
-  example: dwd
-  infoLong: ""
-  infoShort: dwd
+foo:
+  keys:
+    bar:
+      example: ""
+      infoLong: ""
+      infoShort: bar is not foo!

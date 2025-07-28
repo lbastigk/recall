@@ -36,13 +36,13 @@ func loadProjectData(filename string) ProjectData {
 	
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		fmt.Printf("Error reading file: %v\n", err)
+		fmt.Printf("[ERROR] Could not read file: %v\n", err)
 		return make(ProjectData)
 	}
 	
 	var projectData ProjectData
 	if err := yaml.Unmarshal(data, &projectData); err != nil {
-		fmt.Printf("Error parsing YAML: %v\n", err)
+		fmt.Printf("[ERROR] Could not parse YAML: %v\n", err)
 		return make(ProjectData)
 	}
 	

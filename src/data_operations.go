@@ -17,6 +17,11 @@ type ProjectData map[string]interface{}
 
 func getKeyData(projectData ProjectData, keyPath string) KeyData {
 	// keyPath is a string representing the path to the key, e.g. "key1.keys.key2"
+	// If keyPath is empty, use "info" for root-level project information
+	if keyPath == "" {
+		keyPath = "info"
+	}
+	
 	// Split the keyPath into components
 	keyParts := strings.Split(keyPath, ".")
 	
@@ -67,6 +72,11 @@ func getStringValue(m map[interface{}]interface{}, key string) string {
 
 func setKeyData(projectData ProjectData, keyPath string, data KeyData) {
 	// keyPath is a string representing the path to the key, e.g. "key1.keys.key2"
+	// If keyPath is empty, use "info" for root-level project information
+	if keyPath == "" {
+		keyPath = "info"
+	}
+	
 	// Split the keyPath into components
 	keyParts := strings.Split(keyPath, ".")
 	
