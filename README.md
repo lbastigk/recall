@@ -17,8 +17,8 @@ recall myApp authentication
 recall myApp deployment
 
 # Edit information
-recall --edit myApp database
-recall --edit myApp info  # Edit general project info
+recall --edit myApp database  # Edit info to database
+recall --edit myApp           # Edit general project info
 ```
 
 ## Features
