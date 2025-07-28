@@ -100,11 +100,13 @@ main:
 
 ### Interactive Editing
 
-When editing information, recall opens a user-friendly editor interface:
+When editing information, recall opens a user-friendly editor interface. Default editor is nano.
 
+Example edit entry:
 ```
-Project: myProject
-Key: database
+# Edit the information below and save the file
+# Lines starting with # are comments and will be ignored
+# Leave sections empty if not needed
 
 infoShort:
 Database connection utilities
