@@ -1,0 +1,66 @@
+@startuml recall-simple
+title recall - Simple Overview
+
+skinparam component {
+    MinimumWidth 200
+    FontSize 14
+}
+
+' User
+actor User
+
+component "recall\nCLI Tool\n\nProject Knowledge Management" as recall #lightblue
+
+' Input Commands
+
+User -> recall: recall myProject  
+User -> recall: recall myProject myFunction
+User -> recall: recall myProject myFunction myVariable
+User -> recall: recall --edit myProject myFunction
+User -> recall: "recall ~--init / ~--init-global"
+
+note right
+- Show usage help
+- Show general project info
+- Show specific key
+- Show nested keys
+- Edit specific key
+- Initialize directories
+end note
+
+' Where Information Comes From
+
+rectangle "Local" as Local
+rectangle "Global" as Global
+
+Local -[hidden]right- Global
+
+recall -up-> Local: 1. Check \n local first
+Local -down-> recall: Found / \n Not found
+
+recall -up-> Global: 2. Fallback \n to global
+Global -down-> recall: Found / \n Not found
+
+' Data Lookup
+
+note bottom of recall
+**Lookup Priority:**
+1. ./.recall/project.yaml (local)
+2. ~/.recall/project.yaml (global)
+
+**Example YAML Structure:**
+
+info:           # recall myProject
+  infoShort: "..."
+  
+database:       # recall myProject database  
+  infoShort: "..."
+  
+api:            # recall myProject api
+  users:        # recall myProject api users
+    auth:       # recall myProject api users auth
+      infoShort: "..."
+
+end note
+
+@enduml
