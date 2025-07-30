@@ -1,5 +1,7 @@
 package main
 
+
+
 import (
 	"fmt"
 	"os"
@@ -8,6 +10,8 @@ import (
 	"io/ioutil"
 	"gopkg.in/yaml.v2"
 )
+
+var version = "1.0.0"
 
 func main() {
 	// Load settings from ~/.recall/settings.yaml if it exists
@@ -46,6 +50,8 @@ func main() {
 				os.Exit(1)
 			}
 			initGlobal(settings)
+		} else if args[0] == "--version" {
+			fmt.Println(version)
 		} else {
 			project := args[0]
 			keyPath := []string{}
@@ -86,7 +92,10 @@ func main() {
 }
 
 func showUsage(settings *Settings) {
-	fmt.Println("recall - A CLI Tool for Project Knowledge Management")
+	fmt.Println("recall CLI Tool - Version " + version)
+	fmt.Println("Copyright (c) 2023 Your Name")
+	fmt.Println("This tool helps you manage project knowledge efficiently.")
+	fmt.Println("For more information, visit: https://github.com/yourusername/recall")
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Println("  recall                                Show this help")
