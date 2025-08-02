@@ -104,10 +104,6 @@ When editing information, recall opens a user-friendly editor interface. Default
 
 Example edit entry:
 ```
-# Edit the information below and save the file
-# Lines starting with # are comments and will be ignored
-# Leave sections empty if not needed
-
 infoShort:
 Database connection utilities
 
