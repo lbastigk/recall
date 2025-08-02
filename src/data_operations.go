@@ -166,11 +166,6 @@ func parseEditedFile(filename string) (KeyData, error) {
 	var currentContent []string
 	
 	for _, line := range lines {
-		// Skip comments and empty lines at the beginning
-		if strings.HasPrefix(strings.TrimSpace(line), "#") {
-			continue
-		}
-		
 		// Check if this is a section header
 		trimmed := strings.TrimSpace(line)
 		if trimmed == "infoShort:" {

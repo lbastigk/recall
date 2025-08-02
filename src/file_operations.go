@@ -71,11 +71,7 @@ func createTempEditFile(data KeyData) (string, error) {
 	}
 	defer file.Close()
 	
-	content := fmt.Sprintf(`# Edit the information below and save the file
-# Lines starting with # are comments and will be ignored
-# Leave sections empty if not needed
-
-infoShort:
+	content := fmt.Sprintf(`infoShort:
 %s
 
 infoLong:
