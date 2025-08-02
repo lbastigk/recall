@@ -210,21 +210,18 @@ func showKey(settings *Settings, project string, keyPath []string) {
 
 	if keyData.InfoShort != "" {
 		fmt.Println()
-		fmt.Println()
-		fmt.Println("//----------------------------------------------")
-		fmt.Printf ("// Short: \n%s\n", keyData.InfoShort)
+		fmt.Printf("\033[1;32m#############################\033[0m\n")
+		fmt.Printf("\033[1;32mShort:\033[0m\n%s\n", keyData.InfoShort)
 	}
 	if keyData.InfoLong != "" {
 		fmt.Println()
-		fmt.Println()
-		fmt.Println("//----------------------------------------------")
-		fmt.Printf ("// Long: \n%s\n", keyData.InfoLong)
+		fmt.Printf("\033[1;32m#############################\033[0m\n")
+		fmt.Printf("\033[1;32mDescription:\033[0m\n%s\n", keyData.InfoLong)
 	}
 	if keyData.Example != "" {
 		fmt.Println()
-		fmt.Println()
-		fmt.Println("//----------------------------------------------")
-		fmt.Printf ("// Example:\n%s\n", keyData.Example)
+		fmt.Printf("\033[1;32m#############################\033[0m\n")
+		fmt.Printf("\033[1;32mExample:\033[0m\n%s\n", keyData.Example)
 	}
 	
 	// 5.) Show available sub-keys if they exist
@@ -310,9 +307,8 @@ func showSubKeys(projectData ProjectData, keyPath string) {
 	//*
 	if len(keysToShow) > 0 {
 		fmt.Println()
-		fmt.Println()
-		fmt.Println("//----------------------------------------------")
-		fmt.Println("// Available sub-keys:")
+		fmt.Printf("\033[1;32m#############################\033[0m\n")
+		fmt.Printf("\033[1;32mAvailable sub-keys:\033[0m\n")
 		for subKey := range keysToShow {
 			fmt.Printf("  • %s\n", subKey)
 		}
@@ -324,6 +320,7 @@ func editKey(settings *Settings, project string, keyPath []string) {
 	var path string
 	if len(keyPath) == 0 {
 		fmt.Printf("[INFO] Editing general info for project: %s\n", project)
+		fmt.Printf("[INFO] Edit the content between infoShort:, infoLong:, and example: sections\n")
 		path = "" // Empty path means edit the root of the document
 	} else {
 		// For nested keys, we need to construct the path properly
@@ -338,6 +335,7 @@ func editKey(settings *Settings, project string, keyPath []string) {
 			}
 		}
 		fmt.Printf("[INFO] Editing project: %s, key: %s (using %s)\n", project, path, settings.Editor)
+		fmt.Printf("[INFO] Edit the content between infoShort:, infoLong:, and example: sections\n")
 	}
 
 	// 1.) Find project file and load existing data
